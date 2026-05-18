@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite doesn't support enums in Prisma, using strings instead
+// Role: USER, ADMIN
+// BookingStatus: PENDING, CONFIRMED, CANCELLED, COMPLETED, IN_PROGRESS
+// PaymentStatus: PENDING, SUCCESS, FAILED, REFUNDED
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  name          String
+  phone         String?
+  role          String         @default("USER")
+  avatar        String?
+  licenseNumber String?
+  address       String?
+  city          String?
+  bookings      Booking[]
+  notifications Notification[]
+  reviews       Review[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Car {
+  id             String    @id @default(cuid())
+  name           String
+  brand          String
+  category       String    // Hatchback, SUV, etc.
+  segment        String    // Standard, Luxury
+  transmission   String    // Manual, Automatic
+  fuel           String    // Petrol, Diesel, CNG, EV
+  seats          Int
+  price          Float
+  mileage        String?
+  rating         Float     @default(4.5)
+  reviewsCount   Int       @default(0)
+  image          String
+  fallbackImages String?   // JSON stringified array
+  features       String?   // JSON stringified array
+  available      Boolean   @default(true)
+  color          String?
+  year           Int?
+  ac             Boolean   @default(true)
+  description    String?
+  brandLogo      String?
+  brandColor     String?
+  
+  // Health & Fleet Management
+  odometer       Int       @default(0)
+  lastServiceKm  Int       @default(0)
+  nextServiceKm  Int       @default(5000)
+  lastServiceDate DateTime?
+  
+  bookings       Booking[]
+  reviews        Review[]
+  maintenances   Maintenance[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  bookingId       String        @unique // DR-12345
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  carId           String
+  car             Car           @relation(fields: [carId], references: [id])
+  pickupDate      DateTime
+  returnDate      DateTime
+  pickupLocation  String
+  dropLocation    String
+  totalAmount     Float
+  status          String        @default("PENDING")
+  paymentId       String?       @unique
+  paymentStatus   String        @default("PENDING")
+  withDriver      Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  review          Review?
+  driverId        String?
+  driver          Driver?       @relation(fields: [driverId], references: [id])
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  razorpayOrderId  String        @unique
+  razorpayPaymentId String?      @unique
+  razorpaySignature String?
+  amount           Float
+  currency         String        @default("INR")
+  status           String        @default("PENDING")
+  bookingId        String?
+  createdAt        DateTime      @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id])
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   // booking, payment, info
+  isRead    Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Driver {
+  id        String    @id @default(cuid())
+  name      String
+  phone     String
+  email     String?   @unique
+  licenseNo String    @unique
+  avatar    String?
+  status    String    @default("AVAILABLE") // AVAILABLE, ON_TRIP, INACTIVE
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Maintenance {
+  id          String   @id @default(cuid())
+  carId       String
+  car         Car      @relation(fields: [carId], references: [id])
+  serviceType String   // Routine, Repair, Inspection
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  cost        Float?
+  notes       String?
+  status      String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
+  createdAt   DateTime @default(now())
+}
