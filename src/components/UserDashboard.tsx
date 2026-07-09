@@ -3,7 +3,7 @@ import {
   X, Car, Calendar, MapPin, CheckCircle, Clock,
   XCircle, Star, User, Phone, Mail, FileText, Bell, BellOff,
   Edit3, Save, BadgeCheck, Loader2, ChevronRight, Navigation,
-  AlertCircle, Shield, Eye, Download, Trash2
+  AlertCircle, Shield, Eye, Download, Trash2, Wallet, Plus, ArrowUpRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -238,6 +238,12 @@ export default function UserDashboard({ onClose }: { onClose: () => void }) {
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [cancelMsg, setCancelMsg] = useState('');
+  
+  // Wallet State
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletHistory, setWalletHistory] = useState<any[]>([]);
+  const [addAmount, setAddAmount] = useState('');
+  const [isAddingMoney, setIsAddingMoney] = useState(false);
 
   const loadBookings = async () => {
     if (!user) return;
@@ -246,6 +252,17 @@ export default function UserDashboard({ onClose }: { onClose: () => void }) {
       setBookings(data);
     } catch (err) {
       console.error("Failed to load bookings", err);
+    }
+  };
+
+  const loadWallet = async () => {
+    if (!user) return;
+    try {
+      const data = await api.getWalletBalance();
+      setWalletBalance(data.balance);
+      setWalletHistory(data.history || []);
+    } catch (err) {
+      console.error("Failed to load wallet", err);
     }
   };
 
@@ -262,6 +279,7 @@ export default function UserDashboard({ onClose }: { onClose: () => void }) {
         licenseNumber: fullUser.licenseNumber || '',
       });
     }
+    loadWallet();
   }, [user]);
 
   const handleCancel = async (id: string) => {
@@ -298,6 +316,24 @@ export default function UserDashboard({ onClose }: { onClose: () => void }) {
     refreshUnread();
   };
 
+  const handleAddMoney = async () => {
+    const amount = parseInt(addAmount);
+    if (!amount || amount <= 0) return;
+    try {
+      setIsAddingMoney(true);
+      await api.addWalletMoney(amount);
+      await loadWallet();
+      setAddAmount('');
+      setCancelMsg(`Successfully added ₹${amount} to wallet`);
+      setTimeout(() => setCancelMsg(''), 4000);
+    } catch (err: any) {
+      setCancelMsg(err.message || 'Failed to add money');
+      setTimeout(() => setCancelMsg(''), 4000);
+    } finally {
+      setIsAddingMoney(false);
+    }
+  };
+
   const filteredBookings = filterStatus === 'all'
     ? bookings
     : bookings.filter(b => b.status === filterStatus);
@@ -312,6 +348,7 @@ export default function UserDashboard({ onClose }: { onClose: () => void }) {
 
   const TABS = [
     { id: 'bookings', label: 'My Bookings', icon: Car },
+    { id: 'wallet', label: 'Wallet', icon: Wallet },
     { id: 'notifications', label: 'Alerts', icon: Bell, badge: unreadNotifs },
     { id: 'profile', label: 'Profile', icon: User },
   ] as const;
@@ -420,6 +457,78 @@ export default function UserDashboard({ onClose }: { onClose: () => void }) {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ── WALLET TAB ─── */}
+            {tab === 'wallet' && (
+              <div className="p-4 space-y-4">
+                {cancelMsg && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2 text-sm text-green-700">
+                    <CheckCircle size={16} /> {cancelMsg}
+                  </div>
+                )}
+                
+                {/* Balance Card */}
+                <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-orange-500 rounded-full opacity-20 blur-2xl"></div>
+                  <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-blue-500 rounded-full opacity-20 blur-2xl"></div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 text-gray-400 mb-1">
+                      <Wallet size={16} />
+                      <span className="text-sm font-semibold uppercase tracking-wider">DesiRent Wallet</span>
+                    </div>
+                    <div className="text-4xl font-black mt-2 mb-6">
+                      ₹{walletBalance.toLocaleString()}
+                    </div>
+
+                    <div className="flex gap-3">
+                      <input 
+                        type="number" 
+                        placeholder="Amount" 
+                        value={addAmount}
+                        onChange={(e) => setAddAmount(e.target.value)}
+                        className="bg-white/10 border border-white/20 text-white rounded-xl px-4 py-2 w-32 outline-none focus:border-orange-500 transition-colors"
+                      />
+                      <button 
+                        onClick={handleAddMoney}
+                        disabled={isAddingMoney || !addAmount}
+                        className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold px-6 py-2 rounded-xl transition-colors flex items-center gap-2"
+                      >
+                        {isAddingMoney ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+                        Add Money
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Transaction History */}
+                <div>
+                  <h3 className="font-bold text-gray-800 mb-3">Recent Transactions</h3>
+                  <div className="space-y-2">
+                    {walletHistory.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-xl">No transactions yet.</p>
+                    ) : (
+                      walletHistory.map((txn, i) => (
+                        <div key={i} className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${txn.type === 'CREDIT' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                              <ArrowUpRight size={18} className={txn.type === 'CREDIT' ? 'rotate-45' : 'rotate-180'} />
+                            </div>
+                            <div>
+                              <p className="font-bold text-gray-800 text-sm">{txn.description}</p>
+                              <p className="text-xs text-gray-400">{new Date(txn.createdAt).toLocaleString()}</p>
+                            </div>
+                          </div>
+                          <div className={`font-black ${txn.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
+                            {txn.type === 'CREDIT' ? '+' : '-'}₹{txn.amount.toLocaleString()}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

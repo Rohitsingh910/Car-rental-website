@@ -1,308 +1,233 @@
-# 🚗 DesiRent — India's #1 Car Rental Platform
-
-> **"Book a car online like Uber but for rentals"**
-
-A full-stack, production-ready car rental web application built with **React + Vite + Tailwind CSS** (frontend) and **Node.js + Express + Prisma + PostgreSQL** (backend). Designed for the **Indian market** with a focus on **Noida, Sector 37** and Delhi NCR.
-
----
-
-## 📸 Screenshots
-
-- 🏠 Hero section with search bar
-- 🚗 20 cars (15 Standard + 5 Luxury) with real images
-- 📋 Multi-step booking system (like Uber)
-- 🔐 Login/Register with Admin & User roles
-- 🗺️ Popular destinations from Noida
-- 💳 Razorpay payment integration (backend)
-- 📊 Admin dashboard with analytics
+<div align="center">
+  <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=300&fit=crop&auto=format" alt="DesiRent Banner" style="border-radius: 15px; margin-bottom: 20px;">
+  
+  # 🚗 DesiRent (Let's Go) 
+  **Premium Car Rental Platform for India**
+  
+  <p>
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
+    <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+    <img src="https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white" alt="Prisma" />
+    <img src="https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white" alt="Socket.io" />
+  </p>
+</div>
 
 ---
 
-## 🚀 How to Run on Localhost (VS Code)
+## 📖 Overview
 
-### ✅ Prerequisites
+**DesiRent** is a full-stack, real-time car rental application tailored for the Indian market (specifically Noida & Delhi NCR). It bridges the gap between luxury and affordability, providing an incredibly polished UI/UX, real-time booking tracking, an integrated wallet system, and comprehensive admin/driver dashboards.
 
-Make sure you have these installed on your computer:
+## ✨ Key Features
 
-| Tool | Version | Download Link |
-|------|---------|--------------|
-| **Node.js** | v18+ | [nodejs.org](https://nodejs.org/) |
-| **npm** | v9+ | Comes with Node.js |
-| **Git** | Latest | [git-scm.com](https://git-scm.com/) |
-| **VS Code** | Latest | [code.visualstudio.com](https://code.visualstudio.com/) |
-| **Chrome** | Latest | [google.com/chrome](https://www.google.com/chrome/) |
+- **🎨 Premium UI/UX:** Stunning glassmorphism, floating labels, advanced hover animations, and a sleek Dark Mode footer.
+- **⚡ Real-time Updates (Socket.io):** Instant notifications when cars are booked, and real-time live location tracking of drivers on a map.
+- **💼 Integrated Wallet System:** Users can top-up their digital wallet, view transaction history, and pay for rides seamlessly.
+- **🎟️ Promo Code Engine:** Dynamic discount system integrated directly into the booking modal.
+- **👮 Three-Tier Architecture:** Dedicated dashboards for **Users**, **Admins** (with Recharts analytics, PDF/CSV export), and **Drivers** (with trip statuses).
+- **🛠️ Automated Testing:** Fully configured with `Vitest` and `React Testing Library`.
 
-### 📂 Step 1: Open Project in VS Code
+---
 
-```bash
-# Open VS Code, then open the project folder
-# OR use terminal:
-cd path/to/desirent
-code .
+## 🏗️ System Architecture
+
+The application follows a modern client-server architecture with real-time websocket capabilities.
+
+```mermaid
+graph TD
+    %% Define Styles
+    classDef client fill:#f9f9f9,stroke:#e65100,stroke-width:2px,color:#333
+    classDef server fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#333
+    classDef db fill:#ffe0b2,stroke:#ef6c00,stroke-width:2px,color:#333
+    classDef external fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#333
+
+    %% Client Side
+    subgraph Client [Frontend (React + Vite)]
+        UI[User Interface]:::client
+        State[React Context / Auth]:::client
+        API_Client[Axios / Fetch]:::client
+        Socket_Client[Socket.io Client]:::client
+        
+        UI --> State
+        State --> API_Client
+        State --> Socket_Client
+    end
+
+    %% Server Side
+    subgraph Server [Backend (Node.js + Express)]
+        API_Server[Express REST API]:::server
+        Socket_Server[Socket.io Server]:::server
+        Auth_Middleware[JWT Auth Middleware]:::server
+        Prisma[Prisma ORM]:::server
+        
+        API_Client -->|HTTP / JSON| API_Server
+        Socket_Client <-->|WebSockets| Socket_Server
+        
+        API_Server --> Auth_Middleware
+        Auth_Middleware --> Prisma
+        Socket_Server --> Prisma
+    end
+
+    %% Database
+    subgraph DatabaseLayer [Database]
+        DB[(SQLite / PostgreSQL)]:::db
+        Prisma --> DB
+    end
+
+    %% External
+    Maps[OpenStreetMap / Leaflet]:::external
+    UI -->|Map Tiles| Maps
 ```
 
-### 📦 Step 2: Install Dependencies (Frontend)
+---
 
-Open **VS Code Terminal** (`Ctrl + `` ` `` ` or `View → Terminal`):
+## 🔄 Core Workflows
 
-```bash
-# Install all frontend dependencies
-npm install
+### 1. Booking Workflow
+How a user successfully books a car and interacts with the driver.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Frontend
+    participant Backend (Express)
+    participant Socket.IO
+    participant Driver
+    
+    User->>Frontend: Select Car & Dates
+    Frontend->>Frontend: Apply Promo & Wallet Balance
+    User->>Frontend: Click "Confirm Booking"
+    Frontend->>Backend (Express): POST /api/bookings
+    Backend (Express)-->>Frontend: Booking Confirmed (HTTP 201)
+    
+    Backend (Express)->>Socket.IO: Emit 'booking:new'
+    Socket.IO-->>Driver: Notify New Booking Assigned
+    
+    Driver->>Frontend: Update Status (On the way)
+    Frontend->>Backend (Express): PUT /api/bookings/:id/status
+    Backend (Express)->>Socket.IO: Emit 'driver:status_update'
+    Socket.IO-->>User: Show Live Tracking & ETA
 ```
 
-### ▶️ Step 3: Start the Dev Server
+### 2. Admin Analytics Flow
+```mermaid
+flowchart LR
+    A[Admin] -->|Accesses Dashboard| B(Fetch Analytics)
+    B --> C{Prisma Aggregations}
+    C --> D[Revenue Data]
+    C --> E[User Growth Data]
+    C --> F[Booking Status Data]
+    D --> G[Recharts Component]
+    E --> G
+    F --> G
+    G -->|Click Export| H[Generate jsPDF / CSV]
+```
 
+---
+
+## 📂 Folder Structure
+
+```text
+📦 src
+ ┣ 📂 assets           # Static assets (images, icons)
+ ┣ 📂 components       # Reusable React components
+ ┃ ┣ 📜 AboutSection.tsx    # Premium redesigned About page
+ ┃ ┣ 📜 AdminDashboard.tsx  # Admin panel with charts
+ ┃ ┣ 📜 BookingModal.tsx    # Handles Wallet & Promos
+ ┃ ┣ 📜 CarCard.tsx         # Glassmorphism car display
+ ┃ ┣ 📜 Navbar.tsx          # Sticky, glass-blur header
+ ┃ ┗ 📜 ...
+ ┣ 📂 context          # React Context (AuthContext)
+ ┣ 📂 data             # Static mock data & fallback types
+ ┣ 📂 services         # API and Socket integrations
+ ┃ ┣ 📜 api.ts
+ ┃ ┗ 📜 socket.ts
+ ┣ 📜 App.tsx          # Main application routing and state
+ ┣ 📜 index.css        # Tailwind global styles
+ ┣ 📜 main.tsx         # Entry point
+ ┗ 📜 setupTests.ts    # Vitest configuration
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+ recommended)
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/desirent.git
+   cd desirent
+   ```
+
+2. **Install Frontend Dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Install Backend Dependencies** *(Assuming backend is in a `server` folder)*:
+   ```bash
+   cd server
+   npm install
+   ```
+
+4. **Environment Variables:**
+   Create a `.env` file in your server directory:
+   ```env
+   DATABASE_URL="file:./dev.db" # Or your PostgreSQL URL
+   JWT_SECRET="your_super_secret_key"
+   PORT=5000
+   ```
+
+### Running the App
+
+Run the Backend server:
 ```bash
-# Start Vite development server
+# In the server directory
 npm run dev
 ```
 
-You'll see output like:
-```
-  VITE v6.x.x  ready in 300ms
-
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: http://192.168.x.x:5173/
-```
-
-### 🌐 Step 4: Open in Chrome
-
-1. Open **Google Chrome**
-2. Go to: **`http://localhost:5173`**
-3. 🎉 Your DesiRent website is now running!
-
-### 🔄 Live Reload
-
-- Any changes you make to the code will **automatically refresh** in Chrome
-- No need to restart the server
-
----
-
-## 🏗️ Running the Backend (Full-Stack Mode)
-
-### 📦 Step 1: Install Backend Dependencies
-
+Run the Frontend Vite server:
 ```bash
-# Navigate to server folder
-cd server
-
-# Install backend dependencies
-npm install
-```
-
-### 🗄️ Step 2: Setup Database
-
-You need **PostgreSQL** installed:
-- **Windows**: Download from [postgresql.org](https://www.postgresql.org/download/)
-- **Mac**: `brew install postgresql`
-- **Linux**: `sudo apt install postgresql`
-
-```bash
-# Create a new database
-createdb desirent_db
-
-# Copy environment file
-cp .env.example .env
-```
-
-Edit `.env` file:
-```env
-DATABASE_URL="postgresql://your_username:your_password@localhost:5432/desirent_db"
-JWT_SECRET="your-super-secret-key-change-this"
-JWT_REFRESH_SECRET="your-refresh-secret-key-change-this"
-RAZORPAY_KEY_ID="your_razorpay_key_id"
-RAZORPAY_KEY_SECRET="your_razorpay_key_secret"
-PORT=5000
-NODE_ENV=development
-FRONTEND_URL="http://localhost:5173"
-```
-
-### 🔄 Step 3: Run Database Migrations
-
-```bash
-# Generate Prisma client
-npx prisma generate
-
-# Run migrations to create tables
-npx prisma migrate dev --name init
-
-# (Optional) Open Prisma Studio to view your database
-npx prisma studio
-```
-
-### ▶️ Step 4: Start Backend Server
-
-```bash
-# Start the backend server
+# In the root directory
 npm run dev
 ```
 
-Backend will run on: **`http://localhost:5000`**
+Visit `http://localhost:5173` in your browser.
 
-### 🔗 Step 5: Run Both Together
+---
 
-Open **two terminals** in VS Code:
+## 🧪 Testing
 
-**Terminal 1 (Frontend):**
+The project uses **Vitest** for incredibly fast unit and component testing.
+
+To run the tests:
 ```bash
-npm run dev
+npm run test
 ```
-
-**Terminal 2 (Backend):**
+To run tests with UI coverage:
 ```bash
-cd server
-npm run dev
-```
-
-Now open Chrome: **`http://localhost:5173`** — Full-stack DesiRent is running! 🚀
-
----
-
-## 📁 Project Structure
-
-```
-desirent/
-├── 📂 public/
-│   └── 📂 images/
-│       └── 📂 cars/           # AI-generated car images
-│           ├── swift-white.jpg
-│           ├── creta-silver.jpg
-│           ├── nexon-blue.jpg
-│           ├── fortuner-white.jpg
-│           └── mercedes-eclass.jpg
-│
-├── 📂 src/                    # Frontend (React + Vite)
-│   ├── 📂 components/
-│   │   ├── Navbar.tsx         # Navigation with auth
-│   │   ├── HeroSection.tsx    # Hero with search
-│   │   ├── CarCard.tsx        # Car card with smart image loader
-│   │   ├── BookingModal.tsx   # 3-step Uber-like booking
-│   │   ├── AuthModal.tsx      # Login/Register modal
-│   │   ├── AdminDashboard.tsx # Admin panel
-│   │   ├── UserDashboard.tsx  # User bookings & profile
-│   │   ├── AboutSection.tsx   # About page
-│   │   ├── ContactSection.tsx # Contact with OpenStreetMap
-│   │   ├── DestinationsSection.tsx  # Popular destinations
-│   │   ├── Footer.tsx         # Footer
-│   │   └── BackendDocs.tsx    # Interactive backend docs
-│   │
-│   ├── 📂 context/
-│   │   └── AuthContext.tsx    # Auth state management
-│   │
-│   ├── 📂 data/
-│   │   └── cars.ts            # 20 cars data (15 Standard + 5 Luxury)
-│   │
-│   ├── 📂 db/
-│   │   └── database.ts        # localStorage database engine
-│   │
-│   ├── 📂 utils/
-│   │   └── cn.ts              # Tailwind class merger
-│   │
-│   ├── App.tsx                # Main app component
-│   ├── main.tsx               # Entry point
-│   └── index.css              # Tailwind imports
-│
-├── 📂 server/                 # Backend (Node.js + Express)
-│   ├── 📂 prisma/
-│   │   └── schema.prisma      # Database schema (8 models)
-│   │
-│   ├── 📂 src/
-│   │   ├── index.ts           # Express server entry
-│   │   ├── 📂 routes/
-│   │   │   ├── auth.ts        # Auth endpoints (register, login, OTP)
-│   │   │   ├── bookings.ts    # Booking CRUD + pricing
-│   │   │   ├── cars.ts        # Car fleet management
-│   │   │   └── payments.ts    # Razorpay integration
-│   │   └── 📂 middleware/
-│   │       └── auth.ts        # JWT verification middleware
-│   │
-│   ├── .env.example           # Environment variables template
-│   └── package.json           # Backend dependencies
-│
-├── index.html                 # HTML entry point
-├── package.json               # Frontend dependencies
-├── vite.config.ts             # Vite configuration
-├── tailwind.config.js         # Tailwind configuration
-├── tsconfig.json              # TypeScript configuration
-└── README.md                  # This file
+npm run test -- --ui
 ```
 
 ---
 
-## 🔑 Demo Login Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| 👑 **Admin** | `admin@desirent.in` | `admin123` |
-| 👤 **User** | `rahul@gmail.com` | `user123` |
-| 👤 **User** | `priya@gmail.com` | `priya123` |
-
----
-
-## 🚗 Car Fleet (20 Cars)
-
-### Standard Fleet (15 Cars)
-| # | Car | Category | Price/Day | Fuel |
-|---|-----|----------|-----------|------|
-| 1 | Maruti Suzuki Swift | Hatchback | ₹1,500 | Petrol |
-| 2 | Hyundai i20 | Hatchback | ₹1,700 | Petrol |
-| 3 | Tata Altroz | Hatchback | ₹1,600 | Petrol |
-| 4 | Maruti Suzuki Dzire | Sedan | ₹1,800 | CNG |
-| 5 | Honda City | Sedan | ₹2,000 | Petrol |
-| 6 | Hyundai Verna | Sedan | ₹2,200 | Petrol |
-| 7 | Mahindra Thar | SUV | ₹3,000 | Diesel |
-| 8 | Hyundai Creta | SUV | ₹2,500 | Diesel |
-| 9 | Kia Seltos | SUV | ₹2,600 | Petrol |
-| 10 | Mahindra Scorpio-N | SUV | ₹3,200 | Diesel |
-| 11 | Toyota Innova Crysta | MUV | ₹4,000 | Diesel |
-| 12 | Maruti Suzuki Ertiga | MUV | ₹2,800 | CNG |
-| 13 | Mahindra XUV700 | Premium SUV | ₹3,500 | Diesel |
-| 14 | Tata Nexon | SUV | ₹2,200 | Petrol |
-| 15 | Toyota Fortuner | Premium SUV | ₹5,500 | Diesel |
-
-### Luxury Fleet (5 Cars)
-| # | Car | Category | Price/Day | Fuel |
-|---|-----|----------|-----------|------|
-| 16 | Mercedes-Benz E-Class | Luxury Sedan | ₹12,000 | Petrol |
-| 17 | BMW 5 Series | Luxury Sedan | ₹13,500 | Petrol |
-| 18 | Audi A6 | Luxury Sedan | ₹14,000 | Petrol |
-| 19 | Jaguar XF | Luxury Sedan | ₹15,000 | Petrol |
-| 20 | Range Rover Velar | Luxury SUV | ₹18,000 | Petrol |
+## 🎨 UI Showcase
+*(You can add screenshots of your beautiful UI here!)*
+- **Navbar & Hero:** Transparent to glass blur scroll effect.
+- **Car Cards:** Hover-scaling, dynamic badges, glassmorphism.
+- **Contact Form:** Floating labels, 3D hover states.
+- **Admin Dashboard:** Recharts, Export functionality.
 
 ---
 
-## 🛠️ Tech Stack
-
-### Frontend
-- ⚡ **Vite** — Lightning-fast dev server
-- ⚛️ **React 18** — Component-based UI
-- 🎨 **Tailwind CSS** — Utility-first styling
-- 📦 **TypeScript** — Type safety
-- 🎯 **Lucide React** — Beautiful icons
-
-### Backend
-- 🟢 **Node.js** — Runtime
-- 🚂 **Express** — Web framework
-- 🗄️ **Prisma** — ORM for PostgreSQL
-- 🐘 **PostgreSQL** — Database
-- 🔐 **JWT** — Authentication
-- 💳 **Razorpay** — Payment gateway
-
----
-
-## 📞 Contact (Demo Data)
-
-- 📍 **Address**: Sector 37, Noida, Uttar Pradesh, India - 201303
-- 📞 **Phone**: +91 98765 43210
-- 📧 **Email**: support@desirent.in
-- 🌐 **Website**: desirent.in
-
----
-
-## 📄 License
-
-MIT License © 2024 DesiRent
-
----
-
-**Made with ❤️ in India 🇮🇳**
+<div align="center">
+  <p>Built with ❤️ for the Indian roads.</p>
+  <p>© 2024 DesiRent</p>
+</div>

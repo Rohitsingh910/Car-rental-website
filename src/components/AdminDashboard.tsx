@@ -13,6 +13,8 @@ import {
 import { BookingDB, UserDB, DBBooking, DBUser, ReviewDB } from '../db/database';
 import { api } from '../services/api';
 import { socketService } from '../services/socket';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:   'bg-yellow-100 text-yellow-700 border-yellow-200',
@@ -66,6 +68,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [statusUpdateId, setStatusUpdateId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [bookingFilter, setBookingFilter] = useState<string>('all');
 
   const [adminStats, setAdminStats] = useState<any>(null);
 
@@ -228,6 +231,28 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'desirent_bookings.csv'; a.click();
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.text('DesiRent Bookings Report', 14, 15);
+    
+    const tableColumn = ['Booking No', 'Customer', 'Car', 'Pickup', 'Destination', 'Status', 'Date'];
+    const tableRows = bookings.map(b => [
+      b.bookingId, b.user?.name || 'N/A', b.car?.name || 'N/A', b.pickupLocation,
+      b.dropLocation, b.status, new Date(b.createdAt).toLocaleDateString('en-IN')
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [249, 115, 22] } // Orange-500
+    });
+
+    doc.save('desirent_bookings.pdf');
   };
 
   const TABS = [
@@ -418,10 +443,16 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
                     </button>
                   ))}
                 </div>
-                <button onClick={exportCSV}
-                  className="p-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex-shrink-0">
-                  <Download size={16} />
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={exportCSV} title="Export CSV"
+                    className="p-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex-shrink-0">
+                    <Download size={16} />
+                  </button>
+                  <button onClick={exportPDF} title="Export PDF"
+                    className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex-shrink-0">
+                    <Download size={16} />
+                  </button>
+                </div>
               </div>
 
               {/* Booking Detail Modal */}

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, MessageCircle, Send, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, MessageCircle, Send, Instagram, Facebook, Twitter, HeadphonesIcon } from 'lucide-react';
 
 export default function ContactSection() {
   const [contactForm, setContactForm] = useState({ name: '', phone: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setContactForm({ ...contactForm, [e.target.name]: e.target.value });
@@ -19,208 +20,222 @@ export default function ContactSection() {
   const contactInfo = [
     {
       icon: Phone,
-      title: 'Call / WhatsApp',
+      title: 'Call Support',
       lines: ['+91 98765 43210', '+91 87654 32109'],
       sub: 'Mon–Sun: 7:00 AM – 10:00 PM',
-      color: 'text-green-600 bg-green-50',
+      color: 'from-orange-400 to-red-500',
       action: { label: 'Call Now', href: 'tel:+919876543210' },
     },
     {
       icon: MessageCircle,
-      title: 'WhatsApp Us',
+      title: 'WhatsApp Chat',
       lines: ['+91 98765 43210'],
-      sub: 'Instant reply on WhatsApp',
-      color: 'text-green-500 bg-green-50',
-      action: { label: 'Chat on WhatsApp', href: 'https://web.whatsapp.com/send?phone=919876543210&text=Hi%20DesiRent%2C%20I%20want%20to%20book%20a%20car' },
+      sub: 'Instant replies in 5 mins',
+      color: 'from-emerald-400 to-green-500',
+      action: { label: 'Message Us', href: 'https://web.whatsapp.com/send?phone=919876543210' },
     },
     {
       icon: Mail,
       title: 'Email Us',
       lines: ['support@desirent.in', 'bookings@desirent.in'],
       sub: 'Reply within 2 hours',
-      color: 'text-blue-600 bg-blue-50',
+      color: 'from-blue-400 to-indigo-500',
       action: { label: 'Send Email', href: 'mailto:support@desirent.in' },
     },
     {
       icon: MapPin,
-      title: 'Visit Our Office',
-      lines: ['Shop No. 14, Block C Market', 'Sector 37, Noida – 201301', 'Uttar Pradesh, India'],
-      sub: 'Open 7 days a week',
-      color: 'text-orange-600 bg-orange-50',
-      action: { label: 'Get Directions', href: 'https://www.google.com/maps/search/Sector+37+Noida+Uttar+Pradesh/@28.5706,77.3410,15z' },
+      title: 'Visit Office',
+      lines: ['Shop 14, Block C Market', 'Sector 37, Noida – 201301'],
+      sub: 'Open all 7 days',
+      color: 'from-purple-400 to-fuchsia-500',
+      action: { label: 'Get Directions', href: 'https://www.google.com/maps/search/Sector+37+Noida' },
     },
   ];
 
   return (
-    <section id="contact" className="py-16 bg-white">
+    <section id="contact" className="py-24 bg-white relative">
+      {/* Background decor */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <span className="inline-block bg-orange-100 text-orange-600 text-sm font-semibold px-4 py-1.5 rounded-full mb-3">
-            📞 Get In Touch
+        <div className="text-center mb-16">
+          <span className="inline-flex items-center gap-2 bg-orange-50 text-orange-600 text-sm font-bold px-4 py-1.5 rounded-full mb-4 border border-orange-100">
+            <HeadphonesIcon className="w-4 h-4" /> 24/7 Support
           </span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">Contact Us</h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
-            We're here 7 days a week to help you plan your perfect road trip
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">Let's Get In Touch</h2>
+          <p className="text-slate-500 text-lg max-w-xl mx-auto">
+            Have questions about your booking? Need a custom itinerary? We're here to help you plan the perfect road trip.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Contact Info Cards */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          
+          {/* Left: Contact Info Grid */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {contactInfo.map((info) => (
-              <div key={info.title} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${info.color}`}>
-                  <info.icon className="w-5 h-5" />
+              <div key={info.title} className="group bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-orange-100 transition-all duration-300">
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${info.color} flex items-center justify-center mb-5 shadow-inner transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                  <info.icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-bold text-gray-800 mb-2">{info.title}</h3>
+                <h3 className="font-bold text-slate-900 text-lg mb-2">{info.title}</h3>
                 {info.lines.map((line, i) => (
-                  <p key={i} className="text-gray-700 text-sm font-medium">{line}</p>
+                  <p key={i} className="text-slate-600 font-medium text-sm leading-relaxed">{line}</p>
                 ))}
-                <p className="text-gray-400 text-xs mt-1 mb-3">{info.sub}</p>
+                <p className="text-slate-400 text-xs mt-2 mb-4 font-medium">{info.sub}</p>
                 <a
                   href={info.action.href}
                   target={info.action.href.startsWith('http') ? '_blank' : undefined}
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-orange-600 text-sm font-semibold hover:text-orange-700 transition"
+                  className="inline-flex items-center gap-1.5 text-orange-600 text-sm font-bold group-hover:text-orange-500 transition-colors"
                 >
-                  {info.action.label} →
+                  {info.action.label} 
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </a>
               </div>
             ))}
 
-            {/* Working Hours */}
-            <div className="sm:col-span-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-6 text-white">
-              <Clock className="w-6 h-6 mb-3 opacity-80" />
-              <h3 className="font-bold text-lg mb-3">Working Hours</h3>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+            {/* Social Media Strip */}
+            <div className="sm:col-span-2 bg-slate-50 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-100">
+              <div className="text-slate-600 font-bold text-sm">Follow our journeys:</div>
+              <div className="flex gap-3">
                 {[
-                  { day: 'Monday – Friday', time: '7:00 AM – 10:00 PM' },
-                  { day: 'Saturday', time: '6:00 AM – 11:00 PM' },
-                  { day: 'Sunday & Holidays', time: '7:00 AM – 9:00 PM' },
-                  { day: 'Emergency 24/7', time: '+91 98765 43210' },
-                ].map((h) => (
-                  <div key={h.day} className="bg-white/10 rounded-xl p-3">
-                    <div className="font-semibold text-white/90 text-xs">{h.day}</div>
-                    <div className="text-white/70 text-xs mt-0.5">{h.time}</div>
-                  </div>
+                  { icon: Instagram, href: '#', color: 'bg-pink-500 text-white' },
+                  { icon: Facebook, href: '#', color: 'bg-blue-600 text-white' },
+                  { icon: Twitter, href: '#', color: 'bg-sky-500 text-white' },
+                ].map((s, i) => (
+                  <a
+                    key={i}
+                    href={s.href}
+                    className={`w-10 h-10 ${s.color} rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform`}
+                  >
+                    <s.icon className="w-4 h-4" />
+                  </a>
                 ))}
               </div>
-            </div>
-
-            {/* Social Media */}
-            <div className="sm:col-span-2 flex flex-wrap gap-3">
-              {[
-                { icon: Instagram, label: '@desirent.in', href: '#', color: 'bg-pink-500' },
-                { icon: Facebook, label: 'DesiRent India', href: '#', color: 'bg-blue-600' },
-                { icon: Twitter, label: '@desirent', href: '#', color: 'bg-sky-500' },
-                { icon: MessageCircle, label: 'WhatsApp', href: 'https://web.whatsapp.com/send?phone=919876543210&text=Hi%20DesiRent!', color: 'bg-green-500' },
-              ].map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-4 py-2.5 rounded-xl transition text-sm font-medium text-gray-700"
-                >
-                  <div className={`w-6 h-6 ${s.color} rounded-lg flex items-center justify-center`}>
-                    <s.icon className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  {s.label}
-                </a>
-              ))}
             </div>
           </div>
 
           {/* Right: Contact Form */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-md">
-            <h3 className="font-bold text-gray-800 text-lg mb-1">Send a Message</h3>
-            <p className="text-gray-400 text-sm mb-5">We'll get back to you within 30 minutes</p>
+          <div className="lg:col-span-5 bg-white border border-slate-100 rounded-3xl p-8 md:p-10 shadow-2xl shadow-slate-200/40 relative overflow-hidden">
+            {/* Soft decorative glow behind form */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-400/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            
+            <h3 className="font-black text-slate-900 text-2xl mb-2 relative z-10">Send a Message</h3>
+            <p className="text-slate-500 text-sm mb-8 relative z-10">We'll get back to you within 30 minutes.</p>
 
             {submitted ? (
-              <div className="text-center py-8">
-                <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">✅</span>
+              <div className="text-center py-12 animate-in zoom-in duration-300">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white">
+                    <Send className="w-6 h-6" />
+                  </div>
                 </div>
-                <h4 className="font-bold text-gray-800 mb-1">Message Sent!</h4>
-                <p className="text-gray-500 text-sm">We'll contact you shortly on your phone/email.</p>
+                <h4 className="font-black text-slate-900 text-xl mb-2">Message Sent!</h4>
+                <p className="text-slate-500 text-sm">Our support team will contact you shortly.</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Full Name *</label>
+              <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+                
+                {/* Floating Label Input for Name */}
+                <div className="relative">
                   <input
                     type="text"
                     name="name"
+                    id="name"
                     value={contactForm.name}
                     onChange={handleChange}
-                    placeholder="Rahul Sharma"
+                    onFocus={() => setFocusedField('name')}
+                    onBlur={() => setFocusedField(null)}
                     required
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                    className="peer w-full px-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 placeholder-transparent focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-slate-50/50 focus:bg-white"
+                    placeholder="Full Name"
                   />
+                  <label 
+                    htmlFor="name" 
+                    className={`absolute left-4 transition-all duration-200 pointer-events-none font-medium
+                      ${focusedField === 'name' || contactForm.name ? '-top-2.5 bg-white px-2 text-xs text-orange-600' : 'top-4 text-sm text-slate-400'}`}
+                  >
+                    Full Name *
+                  </label>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Phone Number *</label>
+
+                {/* Floating Label Input for Phone */}
+                <div className="relative">
                   <input
                     type="tel"
                     name="phone"
+                    id="phone"
                     value={contactForm.phone}
                     onChange={handleChange}
-                    placeholder="+91 98765 43210"
+                    onFocus={() => setFocusedField('phone')}
+                    onBlur={() => setFocusedField(null)}
                     required
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                    className="peer w-full px-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 placeholder-transparent focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-slate-50/50 focus:bg-white"
+                    placeholder="Phone Number"
                   />
+                  <label 
+                    htmlFor="phone" 
+                    className={`absolute left-4 transition-all duration-200 pointer-events-none font-medium
+                      ${focusedField === 'phone' || contactForm.phone ? '-top-2.5 bg-white px-2 text-xs text-orange-600' : 'top-4 text-sm text-slate-400'}`}
+                  >
+                    Phone Number *
+                  </label>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Email Address</label>
+
+                {/* Floating Label Input for Email */}
+                <div className="relative">
                   <input
                     type="email"
                     name="email"
+                    id="email"
                     value={contactForm.email}
                     onChange={handleChange}
-                    placeholder="rahul@gmail.com"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                    className="peer w-full px-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 placeholder-transparent focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-slate-50/50 focus:bg-white"
+                    placeholder="Email Address"
                   />
+                  <label 
+                    htmlFor="email" 
+                    className={`absolute left-4 transition-all duration-200 pointer-events-none font-medium
+                      ${focusedField === 'email' || contactForm.email ? '-top-2.5 bg-white px-2 text-xs text-orange-600' : 'top-4 text-sm text-slate-400'}`}
+                  >
+                    Email Address (Optional)
+                  </label>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Message *</label>
+
+                {/* Floating Label Textarea for Message */}
+                <div className="relative">
                   <textarea
                     name="message"
+                    id="message"
                     value={contactForm.message}
                     onChange={handleChange}
+                    onFocus={() => setFocusedField('message')}
+                    onBlur={() => setFocusedField(null)}
                     rows={4}
-                    placeholder="I want to rent a car for..."
                     required
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none"
+                    className="peer w-full px-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 placeholder-transparent focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-slate-50/50 focus:bg-white resize-none"
+                    placeholder="How can we help?"
                   />
+                  <label 
+                    htmlFor="message" 
+                    className={`absolute left-4 transition-all duration-200 pointer-events-none font-medium
+                      ${focusedField === 'message' || contactForm.message ? '-top-2.5 bg-white px-2 text-xs text-orange-600' : 'top-4 text-sm text-slate-400'}`}
+                  >
+                    How can we help? *
+                  </label>
                 </div>
+
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group"
                 >
-                  <Send className="w-4 h-4" /> Send Message
+                  <span>Send Message</span>
+                  <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </button>
               </form>
             )}
-
-            {/* Map Embed — OpenStreetMap (always works, no API key needed) */}
-            <div className="mt-5 rounded-xl overflow-hidden bg-gray-100 relative">
-              <iframe
-                title="DesiRent Location - Sector 37 Noida"
-                src="https://www.openstreetmap.org/export/embed.html?bbox=77.3310%2C28.5606%2C77.3510%2C28.5806&layer=mapnik&marker=28.5706%2C77.3410"
-                className="w-full border-0"
-                style={{ height: '180px' }}
-                loading="lazy"
-              />
-              <a
-                href="https://www.google.com/maps/search/Sector+37+Noida+Uttar+Pradesh/@28.5706,77.3410,15z"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-xl transition"
-              >
-                <MapPin className="w-4 h-4" />
-                Open in Google Maps
-              </a>
-            </div>
           </div>
         </div>
       </div>

@@ -10,6 +10,7 @@ import CarCard from './components/CarCard';
 import BookingModal from './components/BookingModal';
 import AdminDashboard from './components/AdminDashboard';
 import AuthModal from './components/AuthModal';
+import DriverDashboard from './components/DriverDashboard';
 // Removed BackendDocs for production feel
 import { cars as staticCars, Car } from './data/cars';
 import { api } from './services/api';
@@ -108,6 +109,7 @@ function AppContent() {
   const [showFilters, setShowFilters]             = useState(false);
   const [showBackToTop, setShowBackToTop]         = useState(false);
   const [_heroDestination, setHeroDestination]    = useState('');
+  const [heroTripType, setHeroTripType]           = useState('self-drive');
   // Toast System State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -138,8 +140,9 @@ function AppContent() {
     setActiveSection(id);
   };
 
-  const handleHeroSearch = (_pickup: string, destination: string, _date: string) => {
+  const handleHeroSearch = (_pickup: string, destination: string, _date: string, tripType: string) => {
     setHeroDestination(destination);
+    setHeroTripType(tripType);
     scrollToSection('cars');
   };
 
@@ -580,19 +583,19 @@ function AppContent() {
       )}
 
       {/* ── Sticky Mobile Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden">
-        <div className="flex">
+      <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-white/80 backdrop-blur-xl border-t border-slate-200/50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] pb-safe">
+        <div className="flex p-2 gap-2">
           <a
             href="tel:+919876543210"
-            className="flex-1 bg-orange-500 text-white py-3.5 text-center text-sm font-bold flex items-center justify-center gap-2"
+            className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-900 py-3 rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 transition-colors"
           >
-            <Phone className="w-4 h-4" /> Call Now
+            <Phone className="w-4 h-4" /> Call
           </a>
           <button
             onClick={() => scrollToSection('cars')}
-            className="flex-1 bg-red-600 text-white py-3.5 text-center text-sm font-bold flex items-center justify-center gap-2"
+            className="flex-[2] bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 transition-all"
           >
-            🚗 Book Car
+            <CarIcon className="w-4 h-4" /> Book Car
           </button>
         </div>
       </div>
@@ -601,6 +604,7 @@ function AppContent() {
       {selectedCar && (
         <BookingModal
           car={selectedCar}
+          initialTripType={heroTripType}
           onClose={() => setSelectedCar(null)}
           onOpenAuth={() => setShowAuthModal(true)}
           showToast={showToast}
@@ -615,16 +619,22 @@ function AppContent() {
 
       {/* ── Toast Notification System ── */}
       {toast && (
-        <div className={`fixed top-24 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl glass animate-fade-in ${
-          toast.type === 'success' ? 'border-green-500/50' : 'border-red-500/50'
+        <div className={`fixed top-24 right-4 md:right-6 z-[100] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border animate-in slide-in-from-right-8 fade-in duration-300 ${
+          toast.type === 'success' 
+            ? 'bg-emerald-50/90 border-emerald-200 text-emerald-900 shadow-emerald-500/10' 
+            : 'bg-red-50/90 border-red-200 text-red-900 shadow-red-500/10'
         }`}>
           {toast.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-green-500" />
+            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+            </div>
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-500" />
+            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-4 h-4 text-red-600" />
+            </div>
           )}
-          <span className="text-sm font-semibold text-gray-800">{toast.message}</span>
-          <button onClick={() => setToast(null)} className="ml-4 text-gray-400 hover:text-gray-600">
+          <span className="text-sm font-bold">{toast.message}</span>
+          <button onClick={() => setToast(null)} className="ml-2 text-slate-400 hover:text-slate-600 transition-colors p-1 bg-white/50 rounded-full hover:bg-white">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -634,9 +644,11 @@ function AppContent() {
 }
 
 export default function App() {
+  const isDriverRoute = window.location.pathname === '/driver';
+
   return (
     <AuthProvider>
-      <AppContent />
+      {isDriverRoute ? <DriverDashboard /> : <AppContent />}
     </AuthProvider>
   );
 }

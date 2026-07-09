@@ -3,7 +3,7 @@ import { MapPin, Calendar, Users, Search, Navigation, ChevronDown } from 'lucide
 import { pickupLocations, popularDestinations } from '../data/cars';
 
 interface HeroSectionProps {
-  onSearch: (pickup: string, destination: string, date: string) => void;
+  onSearch: (pickup: string, destination: string, date: string, tripType: string) => void;
 }
 
 export default function HeroSection({ onSearch }: HeroSectionProps) {
@@ -11,13 +11,14 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState('');
   const [passengers, setPassengers] = useState('2');
+  const [tripType, setTripType] = useState('self-drive');
 
   const handleSearch = () => {
     if (!destination) {
       alert('Please enter a destination');
       return;
     }
-    onSearch(pickup, destination, date);
+    onSearch(pickup, destination, date, tripType);
   };
 
   return (
@@ -133,10 +134,10 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               </div>
             </div>
 
-            {/* Passengers */}
-            <div className="group">
+            {/* Passengers & Trip Type */}
+            <div className="group col-span-1 sm:col-span-2 lg:col-span-1">
               <label className="text-white/60 text-[10px] font-bold uppercase tracking-wider block mb-1.5 ml-1">
-                <Users className="w-3 h-3 inline mr-1 text-orange-400" />Passengers
+                <Users className="w-3 h-3 inline mr-1 text-orange-400" />Passengers & Type
               </label>
               <div className="flex gap-2 transition-transform duration-300 group-focus-within:scale-[1.02]">
                 <div className="relative flex-1">
@@ -151,11 +152,24 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                 </div>
+                
+                <div className="relative flex-1 hidden sm:block lg:hidden xl:block">
+                  <select
+                    value={tripType}
+                    onChange={(e) => setTripType(e.target.value)}
+                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 text-white px-3 py-3 rounded-2xl text-sm focus:ring-2 focus:ring-orange-400/50 focus:bg-white/10 outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="self-drive" className="text-gray-800 bg-white">🚗 Self Drive</option>
+                    <option value="with-driver" className="text-gray-800 bg-white">👨‍✈️ With Driver</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                </div>
+
                 <button
                   onClick={handleSearch}
-                  className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
                 >
-                  <Search className="w-4 h-4" /> Go
+                  <Search className="w-4 h-4" /> <span className="hidden sm:inline lg:hidden xl:inline">Go</span>
                 </button>
               </div>
             </div>

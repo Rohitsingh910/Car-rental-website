@@ -151,5 +151,36 @@ export const api = {
     });
     if (!res.ok) throw new Error('Payment verification failed');
     return res.json();
+  },
+
+  // Promos
+  async validatePromo(code: string, amount: number) {
+    const res = await fetch(`${API_URL}/promos/validate`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ code, amount }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Invalid promo code');
+    }
+    return res.json();
+  },
+
+  // Wallet
+  async getWalletBalance() {
+    const res = await fetch(`${API_URL}/wallet`, { headers: getHeaders() });
+    if (!res.ok) throw new Error('Failed to fetch wallet');
+    return res.json();
+  },
+
+  async addWalletMoney(amount: number) {
+    const res = await fetch(`${API_URL}/wallet/add`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ amount }),
+    });
+    if (!res.ok) throw new Error('Failed to add money');
+    return res.json();
   }
 };

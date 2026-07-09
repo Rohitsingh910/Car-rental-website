@@ -67,6 +67,36 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Driver Login
+router.post('/driver-login', async (req: any, res: any) => {
+  try {
+    const { phone, password } = req.body;
+
+    const driver = await prisma.driver.findFirst({ where: { phone } });
+    if (!driver) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, driver.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    if (driver.status === 'INACTIVE') {
+      return res.status(403).json({ message: 'Driver account is inactive' });
+    }
+
+    const token = jwt.sign({ id: driver.id, role: 'DRIVER' }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ 
+      token, 
+      user: { id: driver.id, phone: driver.phone, name: driver.name, role: 'DRIVER' } 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // Get User Profile (Protected Route - Uses authenticateToken)
 router.get('/me', authenticateToken, async (req: any, res) => {
   try {

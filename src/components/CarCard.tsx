@@ -51,25 +51,20 @@ function BrandPlaceholder({ car }: { car: Car }) {
   const meta = brandColors[car.brand] ?? { hex: '#374151', light: '#f3f4f6' };
   return (
     <div
-      className="w-full h-full flex flex-col items-center justify-center gap-3 select-none"
+      className="w-full h-full flex flex-col items-center justify-center gap-3 select-none relative overflow-hidden"
       style={{ background: `linear-gradient(135deg, ${meta.light} 0%, ${meta.hex}22 100%)` }}
     >
+      <div className="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
+      
       {/* Brand badge */}
       <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg"
+        className="relative z-10 w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg"
         style={{ backgroundColor: meta.hex }}
       >
         {car.brandLogo}
       </div>
-      {/* Car silhouette SVG */}
-      <svg viewBox="0 0 200 80" className="w-36 opacity-30" fill={meta.hex}>
-        <path d="M20,60 L30,60 L30,52 Q38,28 65,24 L135,24 Q162,28 170,52 L170,60 L180,60 L180,64 L20,64 Z" />
-        <circle cx="58" cy="64" r="10" />
-        <circle cx="142" cy="64" r="10" />
-        <path d="M70,24 Q82,10 100,9 Q118,10 130,24 Z" opacity="0.6"/>
-        <rect x="78" y="12" width="44" height="12" rx="2" opacity="0.3"/>
-      </svg>
-      <div className="text-center px-4">
+      
+      <div className="relative z-10 text-center px-4">
         <p className="text-sm font-bold text-gray-700 leading-tight">{car.name}</p>
         <p className="text-xs text-gray-500 mt-0.5">{car.year} · {car.category}</p>
       </div>
@@ -88,13 +83,12 @@ function CarImage({ car }: { car: Car }) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
 
-  // All sources exhausted — show branded placeholder
   if (errored && idx >= allSources.length - 1) {
     return <BrandPlaceholder car={car} />;
   }
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative group/img overflow-hidden">
       {!loaded && <ShimmerPlaceholder />}
       <img
         key={`${car.id}-${idx}`}
@@ -112,102 +106,98 @@ function CarImage({ car }: { car: Car }) {
             setErrored(true);
           }
         }}
-        className={`w-full h-full object-cover object-center transition-all duration-700 group-hover:scale-110 ${
+        className={`w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110 ${
           loaded ? 'opacity-100' : 'opacity-0'
         }`}
       />
       {/* Premium Overlay Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     </div>
   );
 }
 
 // ─── CarCard ──────────────────────────────────────────────────────────────────
 export default function CarCard({ car, onBookNow }: CarCardProps) {
-  const fuel  = fuelColors[car.fuel]                   ?? { text: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-400' };
-  const trans = transmissionColors[car.transmission]   ?? { text: 'text-gray-600', bg: 'bg-gray-50' };
+  const fuel  = fuelColors[car.fuel]                   ?? { text: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-200', dot: 'bg-slate-400' };
+  const trans = transmissionColors[car.transmission]   ?? { text: 'text-slate-600', bg: 'bg-slate-50' };
   const isLuxury = car.segment === 'Luxury';
 
   return (
     <div className={`
-      relative bg-white rounded-2xl overflow-hidden flex flex-col group
-      transition-all duration-300 hover:-translate-y-1.5
+      relative bg-white rounded-3xl overflow-hidden flex flex-col group
+      transition-all duration-300 hover:-translate-y-2
       ${isLuxury
-        ? 'shadow-lg hover:shadow-2xl border-2 border-amber-200 hover:border-amber-400'
-        : 'shadow-md hover:shadow-xl border border-gray-100 hover:border-orange-200'
+        ? 'shadow-xl hover:shadow-2xl border-2 border-amber-200 hover:border-amber-400'
+        : 'shadow-lg hover:shadow-2xl border border-slate-100 hover:border-orange-200'
       }
     `}>
-
+      
       {/* ── Luxury Crown Ribbon ── */}
       {isLuxury && (
-        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 py-1 px-3 flex items-center justify-center gap-1.5">
-          <Crown className="w-3 h-3 text-white" />
-          <span className="text-white text-[10px] font-bold tracking-widest uppercase">Premium Luxury</span>
-          <Crown className="w-3 h-3 text-white" />
+        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 py-1.5 px-3 flex items-center justify-center gap-1.5 shadow-md">
+          <Crown className="w-3.5 h-3.5 text-white" />
+          <span className="text-white text-[10px] font-black tracking-widest uppercase">Premium Luxury</span>
+          <Crown className="w-3.5 h-3.5 text-white" />
         </div>
       )}
 
       {/* ── IMAGE SECTION ── */}
-      <div className={`relative overflow-hidden bg-slate-50 ${isLuxury ? 'h-48 mt-6' : 'h-44'}`}>
+      <div className={`relative overflow-hidden bg-slate-50 ${isLuxury ? 'h-52 mt-7' : 'h-48'}`}>
         <CarImage car={car} />
 
-        {/* Rating badge */}
-        <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md z-10">
-          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-          <span className="text-gray-800">{car.rating}</span>
-          <span className="text-gray-400 font-normal">({car.reviewsCount || car.reviews || 0})</span>
+        {/* Top Badges Area */}
+        <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+          <div className="bg-white/80 backdrop-blur-md text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm border border-white/50">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-slate-900">{car.rating}</span>
+            <span className="text-slate-400 font-medium text-[10px]">({car.reviewsCount || car.reviews || 0})</span>
+          </div>
+
+          {!car.available ? (
+            <div className="bg-red-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm animate-pulse border border-red-400">
+              Booked Out
+            </div>
+          ) : (
+            <div className="bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1 border border-emerald-400">
+               <CheckCircle2 className="w-3 h-3" /> Available
+            </div>
+          )}
         </div>
 
-        {/* Not Available badge */}
-        {!car.available && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md z-10 animate-pulse">
-            Booked Out
+        {/* Bottom Badges Area */}
+        <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end z-10">
+          <div className="flex gap-2">
+            {car.ac && (
+              <div className="bg-slate-900/70 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-md font-semibold flex items-center gap-1 border border-white/10">
+                <Wind className="w-3 h-3" /> AC
+              </div>
+            )}
+            <div className="bg-slate-900/70 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-md font-semibold border border-white/10">
+              {car.year}
+            </div>
           </div>
-        )}
 
-        {/* Verified Badge */}
-        {car.available && (
-          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-emerald-600 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md z-10 flex items-center gap-1 border border-emerald-100">
-             <CheckCircle2 className="w-3 h-3" /> Verified
-          </div>
-        )}
-
-        {/* AC badge */}
-        {car.ac && (
-          <div className="absolute bottom-2 left-2 bg-blue-500/90 backdrop-blur text-white text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 z-10">
-            <Wind className="w-2.5 h-2.5" /> AC
-          </div>
-        )}
-
-        {/* Year badge */}
-        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-[10px] px-2 py-0.5 rounded-full font-medium z-10">
-          {car.year}
+          {(car as any).isDynamic && (
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-md shadow-lg animate-bounce border border-orange-400">
+              Hot Deal
+            </div>
+          )}
         </div>
-
-        {/* Dynamic Pricing Badge */}
-        {(car as any).isDynamic && (
-          <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg z-10 animate-bounce">
-            Weekend Deal!
-          </div>
-        )}
-
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 z-[5]" />
       </div>
 
       {/* ── CARD BODY ── */}
-      <div className="p-3.5 flex flex-col flex-1 gap-2.5">
+      <div className="p-5 flex flex-col flex-1 gap-4">
 
         {/* Brand + Name + Category */}
         <div>
-          <div className="flex items-start justify-between gap-1">
-            <h3 className={`font-extrabold text-sm leading-tight transition-colors line-clamp-1 ${
-              isLuxury ? 'text-gray-900 group-hover:text-amber-600' : 'text-gray-800 group-hover:text-orange-600'
+          <div className="flex items-start justify-between gap-1 mb-1">
+            <h3 className={`font-black text-lg leading-tight transition-colors line-clamp-1 ${
+              isLuxury ? 'text-slate-900 group-hover:text-amber-600' : 'text-slate-900 group-hover:text-orange-600'
             }`}>
               {car.name}
             </h3>
           </div>
-          <span className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded ${
+          <span className={`inline-block text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-md ${
             isLuxury ? 'bg-amber-100 text-amber-700' : 'bg-orange-100 text-orange-700'
           }`}>
             {car.category}
@@ -215,32 +205,29 @@ export default function CarCard({ car, onBookNow }: CarCardProps) {
         </div>
 
         {/* Specs Row */}
-        <div className="flex items-center gap-1.5 text-xs flex-wrap">
-          {/* Seats */}
-          <span className="flex items-center gap-1 text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
-            <Users className="w-3 h-3 text-gray-400" />
-            <span className="font-medium">{car.seats} Seats</span>
+        <div className="flex items-center gap-2 text-xs flex-wrap">
+          <span className="flex items-center gap-1.5 text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+            <Users className="w-3.5 h-3.5 text-slate-400" />
+            <span className="font-semibold">{car.seats} Seats</span>
           </span>
 
-          {/* Transmission */}
-          <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full font-medium ${trans.text} ${trans.bg} border border-current/10`}>
-            <Settings className="w-3 h-3" />
+          <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold ${trans.text} ${trans.bg} border border-current/20`}>
+            <Settings className="w-3.5 h-3.5" />
             {car.transmission}
           </span>
 
-          {/* Fuel */}
-          <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full font-medium border ${fuel.text} ${fuel.bg} ${fuel.border}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${fuel.dot}`} />
+          <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold border ${fuel.text} ${fuel.bg} ${fuel.border}`}>
+            <span className={`w-2 h-2 rounded-full ${fuel.dot}`} />
             {car.fuel}
           </span>
         </div>
 
         {/* Mileage + Color */}
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          <Fuel className="w-3 h-3 text-gray-300 flex-shrink-0" />
-          <span className="font-semibold text-gray-600">{car.mileage}</span>
-          <span className="text-gray-200">·</span>
-          <span className="truncate text-gray-400 italic">{car.color}</span>
+        <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+          <Fuel className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+          <span className="font-bold text-slate-700">{car.mileage}</span>
+          <span className="text-slate-300">|</span>
+          <span className="truncate italic">{car.color}</span>
         </div>
 
         {/* Top Feature */}
@@ -252,25 +239,25 @@ export default function CarCard({ car, onBookNow }: CarCardProps) {
           if (featuresArr.length === 0) return null;
           
           return (
-            <div className="flex items-center gap-1.5">
-              <Zap className={`w-3 h-3 flex-shrink-0 ${isLuxury ? 'text-amber-400' : 'text-orange-400'}`} />
-              <span className="text-xs text-gray-500 truncate">{featuresArr.slice(0, 2).join(' · ')}</span>
+            <div className="flex items-center gap-2">
+              <Zap className={`w-3.5 h-3.5 flex-shrink-0 ${isLuxury ? 'text-amber-500' : 'text-orange-500'}`} />
+              <span className="text-xs font-medium text-slate-500 truncate">{featuresArr.slice(0, 2).join(' • ')}</span>
             </div>
           );
         })()}
 
         {/* Price + Book Button */}
-        <div className="flex items-center justify-between mt-auto pt-2.5 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
           <div className="flex flex-col">
             {(car as any).isDynamic && (
-               <span className="text-[10px] text-gray-400 line-through">₹{(car as any).originalPrice}</span>
+               <span className="text-[10px] text-slate-400 line-through">₹{(car as any).originalPrice}</span>
             )}
             <div className="flex items-baseline gap-0.5">
-              <IndianRupee className={`w-3.5 h-3.5 font-black ${isLuxury ? 'text-amber-600' : 'text-gray-800'}`} />
-              <span className={`text-lg font-extrabold ${isLuxury ? 'text-amber-600' : 'text-gray-900'}`}>
+              <IndianRupee className={`w-4 h-4 font-black ${isLuxury ? 'text-amber-600' : 'text-slate-900'}`} />
+              <span className={`text-xl font-black tracking-tight ${isLuxury ? 'text-amber-600' : 'text-slate-900'}`}>
                 {car.price.toLocaleString('en-IN')}
               </span>
-              <span className="text-[11px] text-gray-400 ml-0.5">/day</span>
+              <span className="text-[10px] font-bold text-slate-400 ml-1 uppercase">/ day</span>
             </div>
           </div>
 
@@ -278,22 +265,24 @@ export default function CarCard({ car, onBookNow }: CarCardProps) {
             <button
               onClick={() => onBookNow(car)}
               className={`
-                relative overflow-hidden text-white text-xs font-bold px-4 py-2 rounded-xl
-                transition-all duration-200 active:scale-95 shadow-md hover:shadow-lg
+                relative overflow-hidden text-white text-sm font-black px-5 py-2.5 rounded-xl
+                transition-all duration-300 active:scale-95 shadow-md group/btn
                 ${isLuxury
-                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600'
-                  : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
+                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/30 hover:scale-105'
+                  : 'bg-slate-900 hover:bg-slate-800 hover:shadow-slate-900/30 hover:scale-105'
                 }
               `}
             >
-              <span className="relative z-10">Book Now</span>
+              <span className="relative z-10 flex items-center gap-2">
+                Book <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
+              </span>
             </button>
           ) : (
             <button
               disabled
-              className="bg-gray-100 text-gray-400 text-xs font-bold px-4 py-2 rounded-xl cursor-not-allowed border border-gray-200"
+              className="bg-slate-100 text-slate-400 text-sm font-bold px-5 py-2.5 rounded-xl cursor-not-allowed border border-slate-200"
             >
-              Unavailable
+              Booked
             </button>
           )}
         </div>

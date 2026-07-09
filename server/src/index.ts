@@ -13,6 +13,8 @@ import adminRoutes from './routes/admin';
 import notificationRoutes from './routes/notifications';
 import maintenanceRoutes from './routes/maintenance';
 import driverRoutes from './routes/drivers';
+import promoRoutes from './routes/promos';
+import walletRoutes from './routes/wallet';
 
 dotenv.config();
 
@@ -45,6 +47,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/drivers', driverRoutes);
+app.use('/api/promos', promoRoutes);
+app.use('/api/wallet', walletRoutes);
 
 // Error Handling
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
@@ -55,6 +59,10 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   });
 });
 
-httpServer.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  httpServer.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+export { app };

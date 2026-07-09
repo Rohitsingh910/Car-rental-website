@@ -14,7 +14,7 @@ router.post('/', authenticateToken, async (req: any, res) => {
   try {
     const { 
       carId, pickupDate, returnDate, 
-      pickupLocation, dropLocation, totalAmount, withDriver 
+      pickupLocation, dropLocation, totalAmount, withDriver, promoCodeId 
     } = req.body;
     const userId = req.user.id; 
 
@@ -50,6 +50,13 @@ router.post('/', authenticateToken, async (req: any, res) => {
       },
       include: { car: true, user: true }
     });
+
+    if (promoCodeId) {
+      await prisma.promoCode.update({
+        where: { code: promoCodeId },
+        data: { used: { increment: 1 } }
+      }).catch(e => console.error("Error updating promo count:", e));
+    }
 
     // 3. Email & WhatsApp Notifications
     try {

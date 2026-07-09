@@ -23,6 +23,7 @@ model User {
   licenseNumber String?
   address       String?
   city          String?
+  walletBalance Float          @default(0)
   bookings      Booking[]
   notifications Notification[]
   reviews       Review[]
@@ -131,6 +132,7 @@ model Driver {
   name      String
   phone     String
   email     String?   @unique
+  password  String    @default("$2b$10$EP0M/eR9t7K4t9t3mX7G.eO0/A00E88o1E/1v84E0V2H2B3E12DOW") // default hash for '123456'
   licenseNo String    @unique
   avatar    String?
   status    String    @default("AVAILABLE") // AVAILABLE, ON_TRIP, INACTIVE
@@ -150,4 +152,15 @@ model Maintenance {
   notes       String?
   status      String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
   createdAt   DateTime @default(now())
+}
+
+model PromoCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  discount  Float    // Amount in INR or Percentage
+  type      String   @default("FLAT") // FLAT, PERCENTAGE
+  maxUse    Int      @default(100)
+  used      Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
 }

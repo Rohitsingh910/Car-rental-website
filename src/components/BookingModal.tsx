@@ -2,18 +2,21 @@ import { useState, useEffect } from 'react';
 import {
   X, MapPin, Users, Calendar, Phone, Mail, User, IndianRupee,
   Clock, Navigation, CheckCircle, CreditCard,
-  Smartphone, Building, ChevronRight, Star, Shield, Zap, AlertCircle,
+  Smartphone, Building, ChevronRight, ChevronDown, Star, Shield, Zap, AlertCircle,
   FileText, Loader2, BadgeCheck
 } from 'lucide-react';
 import { Car, pickupLocations, popularDestinations } from '../data/cars';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import LocationPickerMap from './LocationPickerMap';
+import LiveTrackingMap from './LiveTrackingMap';
 // import { BookingDB } from '../db/database';
 
 declare var Razorpay: any;
 
 interface BookingModalProps {
   car: Car;
+  initialTripType?: string;
   onClose: () => void;
   onOpenAuth: () => void;
   showToast: (message: string, type: 'success' | 'error') => void;
@@ -88,12 +91,31 @@ function TrackingTimeline({ steps }: { steps: { label: string; time: string; don
   );
 }
 
-export default function BookingModal({ car, onClose, onOpenAuth, showToast }: BookingModalProps) {
+const TIME_OPTIONS = (() => {
+  const options = [];
+  for(let i=0; i<24; i++) {
+    for(let j=0; j<60; j+=30) {
+      const hh = i.toString().padStart(2, '0');
+      const mm = j.toString().padStart(2, '0');
+      let ampm = i >= 12 ? 'PM' : 'AM';
+      let h = i % 12;
+      if (h === 0) h = 12;
+      options.push({ value: `${hh}:${mm}`, label: `${h.toString().padStart(2, '0')}:${mm} ${ampm}` });
+    }
+  }
+  return options;
+})();
+
+export default function BookingModal({ car, initialTripType, onClose, onOpenAuth, showToast }: BookingModalProps) {
   const { user, isAuthenticated, refreshUnread } = useAuth();
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [confirmedBooking, setConfirmedBooking] = useState<ReturnType<typeof BookingDB.create> | null>(null);
+  const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
+
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [promoCode, setPromoCode] = useState<{code: string, discount: number} | null>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
 
   const [form, setForm] = useState({
     pickupLocation: 'Noida, Sector 37',
@@ -103,7 +125,7 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
     dropDate: '',
     dropTime: '18:00',
     passengers: 1,
-    tripType: 'self-drive' as 'self-drive' | 'with-driver',
+    tripType: (initialTripType || 'self-drive') as 'self-drive' | 'with-driver',
     name: user?.name || '',
     phone: user?.phone || '',
     email: user?.email || '',
@@ -127,8 +149,27 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
   const days = calcDays();
   const driverCharge = form.tripType === 'with-driver' ? 800 * days : 0;
   const baseCost = car.price * days;
-  const gst = Math.round((baseCost + driverCharge) * 0.05);
-  const totalCost = baseCost + driverCharge + gst;
+  const preDiscountCost = baseCost + driverCharge;
+  const promoDiscount = promoCode ? promoCode.discount : 0;
+  const taxableAmount = Math.max(0, preDiscountCost - promoDiscount);
+  const gst = Math.round(taxableAmount * 0.05);
+  const totalCost = taxableAmount + gst;
+
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput.trim()) return;
+    setValidatingPromo(true);
+    try {
+      const res = await api.validatePromo(promoCodeInput.trim(), preDiscountCost);
+      setPromoCode({ code: res.code, discount: res.discount });
+      showToast(res.message, 'success');
+      setPromoCodeInput('');
+    } catch (err: any) {
+      showToast(err.message || 'Invalid promo code', 'error');
+      setPromoCode(null);
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -178,6 +219,7 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
           dropLocation: form.destination,
           totalAmount: totalCost,
           withDriver: form.tripType === 'with-driver',
+          promoCodeId: promoCode ? promoCode.code : undefined,
         };
         const booking = await api.createBooking(bookingData);
         setConfirmedBooking(booking);
@@ -204,6 +246,7 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
         dropLocation: form.destination,
         totalAmount: totalCost,
         withDriver: form.tripType === 'with-driver',
+        promoCodeId: promoCode ? promoCode.code : undefined,
       };
       const booking = await api.createBooking(bookingData);
 
@@ -324,7 +367,12 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
               <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4">
                 <MapPin size={16} className="text-blue-500" /> Live Booking Status
               </h3>
-              <TrackingTimeline steps={confirmedBooking.trackingStatus || []} />
+              {confirmedBooking.withDriver ? (
+                <LiveTrackingMap bookingId={confirmedBooking.id} initialLocation={{ lat: 28.5678, lng: 77.3421 }} />
+              ) : null}
+              <div className="mt-4">
+                <TrackingTimeline steps={confirmedBooking.trackingStatus || []} />
+              </div>
             </div>
 
             {/* Bill Summary */}
@@ -462,13 +510,18 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
                 <label className="block text-sm font-bold text-gray-700 mb-1.5">
                   <MapPin size={14} className="inline mr-1 text-orange-500" /> Pickup Location
                 </label>
-                <select name="pickupLocation" value={form.pickupLocation} onChange={handleChange}
-                  className={`w-full border-2 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400
-                    ${errors.pickupLocation ? 'border-red-400' : 'border-gray-200'}`}>
-                  {pickupLocations.map(loc => (
-                    <option key={loc} value={loc}>{loc}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <input
+                    name="pickupLocation" value={form.pickupLocation} onChange={handleChange}
+                    placeholder="Enter pickup address or pick on map"
+                    className={`w-full border-2 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400
+                      ${errors.pickupLocation ? 'border-red-400' : 'border-gray-200'}`}
+                  />
+                  <LocationPickerMap 
+                    initialLocation={{lat: 28.5678, lng: 77.3421}} 
+                    onLocationSelect={(loc) => { setForm(prev => ({...prev, pickupLocation: loc})); if (errors.pickupLocation) setErrors(e => ({...e, pickupLocation: ''})); }} 
+                  />
+                </div>
                 {errors.pickupLocation && <p className="text-red-500 text-xs mt-1">{errors.pickupLocation}</p>}
               </div>
 
@@ -477,15 +530,21 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
                 <label className="block text-sm font-bold text-gray-700 mb-1.5">
                   <Navigation size={14} className="inline mr-1 text-green-500" /> Destination
                 </label>
-                <input
-                  name="destination" value={form.destination} onChange={handleChange}
-                  list="destinations-list" placeholder="Where are you going?"
-                  className={`w-full border-2 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400
-                    ${errors.destination ? 'border-red-400' : 'border-gray-200'}`}
-                />
-                <datalist id="destinations-list">
-                  {popularDestinations.map(d => <option key={d.name} value={d.name} />)}
-                </datalist>
+                <div className="relative">
+                  <input
+                    name="destination" value={form.destination} onChange={handleChange}
+                    list="destinations-list" placeholder="Where are you going or pick on map"
+                    className={`w-full border-2 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400
+                      ${errors.destination ? 'border-red-400' : 'border-gray-200'}`}
+                  />
+                  <datalist id="destinations-list">
+                    {popularDestinations.map(d => <option key={d.name} value={d.name} />)}
+                  </datalist>
+                  <LocationPickerMap 
+                    initialLocation={{lat: 28.6139, lng: 77.2090}} 
+                    onLocationSelect={(loc) => { setForm(prev => ({...prev, destination: loc})); if (errors.destination) setErrors(e => ({...e, destination: ''})); }} 
+                  />
+                </div>
                 {errors.destination && <p className="text-red-500 text-xs mt-1">{errors.destination}</p>}
                 {/* Popular chips */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
@@ -515,8 +574,13 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">
                     <Clock size={14} className="inline mr-1" /> Pickup Time
                   </label>
-                  <input type="time" name="pickupTime" value={form.pickupTime} onChange={handleChange}
-                    className="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-orange-400" />
+                  <div className="relative">
+                    <select name="pickupTime" value={form.pickupTime} onChange={handleChange}
+                      className="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-orange-400 appearance-none cursor-pointer">
+                      {TIME_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">
@@ -532,8 +596,13 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">
                     <Clock size={14} className="inline mr-1" /> Drop Time
                   </label>
-                  <input type="time" name="dropTime" value={form.dropTime} onChange={handleChange}
-                    className="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-orange-400" />
+                  <div className="relative">
+                    <select name="dropTime" value={form.dropTime} onChange={handleChange}
+                      className="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-orange-400 appearance-none cursor-pointer">
+                      {TIME_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
@@ -681,16 +750,60 @@ export default function BookingModal({ car, onClose, onOpenAuth, showToast }: Bo
                     <span>GST (5%)</span>
                     <span>₹{gst.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-green-600 text-xs">
-                    <span>🏷️ FIRST500 Applied</span>
-                    <span>-₹0</span>
-                  </div>
+                  {promoCode && (
+                    <div className="flex justify-between text-green-600 font-bold text-sm">
+                      <span>🏷️ {promoCode.code} Applied</span>
+                      <span>-₹{promoCode.discount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="border-t-2 border-dashed border-gray-200 pt-2 flex justify-between font-black text-gray-800 text-lg">
                     <span>Total Amount</span>
                     <span className="text-orange-600">₹{totalCost.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Promo Code Input */}
+              {!promoCode && (
+                <div className="bg-white border-2 border-gray-200 rounded-2xl p-4">
+                  <h3 className="font-bold text-gray-800 mb-2">Apply Promo Code</h3>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={promoCodeInput}
+                      onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                      placeholder="ENTER CODE"
+                      className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-2 text-sm font-bold uppercase focus:outline-none focus:border-orange-400"
+                    />
+                    <button 
+                      onClick={handleApplyPromo}
+                      disabled={validatingPromo || !promoCodeInput.trim()}
+                      className="bg-gray-900 text-white px-6 rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      {validatingPromo ? <Loader2 size={16} className="animate-spin" /> : 'Apply'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {promoCode && (
+                <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <BadgeCheck size={16} className="text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-green-800">'{promoCode.code}' applied</p>
+                      <p className="text-xs text-green-600">You saved ₹{promoCode.discount.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setPromoCode(null)}
+                    className="text-xs font-bold text-red-500 hover:text-red-600"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
 
               {/* Payment Methods */}
               <div>

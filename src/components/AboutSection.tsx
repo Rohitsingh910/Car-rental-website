@@ -1,100 +1,119 @@
-import { Shield, Star, Clock, Headphones, Award, MapPin } from 'lucide-react';
+import { Shield, Star, Clock, Headphones, Award, MapPin, CheckCircle } from 'lucide-react';
 
 export default function AboutSection() {
   const stats = [
-    { value: '500+', label: 'Cars in Fleet', color: 'from-orange-500 to-red-500' },
-    { value: '10K+', label: 'Happy Customers', color: 'from-green-500 to-emerald-600' },
-    { value: '4.9', label: 'Average Rating', color: 'from-blue-500 to-indigo-600' },
+    { value: '500+', label: 'Premium Cars', desc: 'Maintained to perfection', color: 'text-orange-500' },
+    { value: '10K+', label: 'Happy Users', desc: 'Across India', color: 'text-blue-500' },
+    { value: '4.9/5', label: 'Average Rating', desc: 'From 5000+ reviews', color: 'text-amber-500' },
   ];
 
   const whyUs = [
-    { icon: Shield, title: 'Fully Insured', desc: 'All cars come with comprehensive insurance for complete peace of mind.' },
-    { icon: Star, title: 'Top Rated Service', desc: 'Rated 4.9/5 by 10,000+ customers across Delhi NCR and India.' },
-    { icon: Clock, title: '24/7 Support', desc: 'Round the clock customer support — call, WhatsApp, or email.' },
-    { icon: Headphones, title: 'Easy Booking', desc: 'Book in 3 simple steps. Instant confirmation on WhatsApp.' },
-    { icon: Award, title: 'Best Prices', desc: 'Guaranteed lowest prices for Indian cars. No hidden charges.' },
-    { icon: MapPin, title: 'Multiple Pickups', desc: 'Pickup from 10+ locations across Noida, Delhi NCR.' },
+    { icon: Shield, title: 'Fully Insured', desc: 'Complete peace of mind on every trip.' },
+    { icon: Star, title: 'Top Rated', desc: 'Award-winning service across NCR.' },
+    { icon: Clock, title: '24/7 Support', desc: 'We are always here when you need us.' },
+    { icon: Headphones, title: 'Easy Booking', desc: '3-step instant confirmation.' },
+    { icon: Award, title: 'Best Prices', desc: 'No hidden charges. Guaranteed.' },
+    { icon: MapPin, title: 'Multiple Pickups', desc: '10+ locations for your convenience.' },
   ];
 
   return (
-    <section id="about" className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <span className="inline-block bg-orange-100 text-orange-600 text-sm font-semibold px-4 py-1.5 rounded-full mb-3">
-            About DesiRent
-          </span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">About Let's Go</h2>
-        </div>
+    <section id="about" className="py-24 relative overflow-hidden bg-slate-50">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-orange-100/40 transform -skew-x-12 translate-x-20"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-20">
+          {/* Left Content */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-100 text-orange-600 font-semibold text-sm mb-6">
+              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+              About DesiRent
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-black text-slate-900 leading-tight mb-6">
+              Your Journey, <br/>
+              <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Our Priority.</span>
+            </h2>
+            <p className="text-slate-600 text-lg leading-relaxed mb-8">
+              Founded in Sector 37, Noida, <strong className="text-slate-900 font-bold">DesiRent (Let's Go)</strong> has revolutionized car rentals in the Delhi NCR region. We bridge the gap between luxury and affordability, ensuring every road trip across India is memorable, safe, and incredibly comfortable.
+            </p>
+            
+            <div className="space-y-4 mb-8">
+              {[
+                "Wide range of Indian brands: Maruti, Hyundai, Tata, Mahindra",
+                "Transparent, affordable pricing with zero hidden fees",
+                "Immaculately maintained fleet for maximum safety"
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <CheckCircle className="w-6 h-6 text-orange-500 flex-shrink-0" />
+                  <span className="text-slate-700 font-medium">{item}</span>
+                </div>
+              ))}
+            </div>
+            
+            <button className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-1">
+              Explore Our Fleet
+            </button>
+          </div>
 
-        {/* Main Content */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-10 border border-gray-100">
-          {/* Driving Image */}
-          <div className="relative h-56 md:h-72 overflow-hidden">
-            <img
-              src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&h=400&fit=crop&auto=format"
-              alt="Drive across India"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-end p-6">
+          {/* Right Image Composition */}
+          <div className="relative">
+            <div className="absolute -inset-4 bg-gradient-to-tr from-orange-400 to-red-400 rounded-3xl transform rotate-3 opacity-20 blur-xl"></div>
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+              <img 
+                src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&h=800&fit=crop&auto=format" 
+                alt="Driving in India" 
+                className="w-full h-[500px] object-cover hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-900/90 to-transparent p-8">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 inline-block">
+                  <p className="text-white font-bold text-xl">10M+ Kilometers</p>
+                  <p className="text-white/80 text-sm">Driven by our happy customers</p>
+                </div>
+              </div>
+            </div>
+            {/* Floating badge */}
+            <div className="absolute -left-8 top-12 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-4 animate-bounce">
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <Star className="w-6 h-6 text-orange-500 fill-orange-500" />
+              </div>
               <div>
-                <h3 className="text-white text-2xl font-bold">Drive Anywhere in India</h3>
-                <p className="text-white/80 text-sm mt-1">From Noida to the Himalayas and back</p>
+                <p className="text-2xl font-black text-slate-900">4.9</p>
+                <p className="text-xs font-bold text-slate-500 uppercase">Top Rated</p>
               </div>
             </div>
           </div>
-
-          <div className="p-6 md:p-8">
-            <h3 className="font-bold text-gray-900 text-xl mb-4">Our Story</h3>
-            <div className="space-y-3 text-gray-600 text-sm leading-relaxed">
-              <p>
-                <strong className="text-orange-600">DesiRent (Let's Go)</strong> is Noida's premier car rental service, located in Sector 37.
-                We have been serving customers since 2020 with a commitment to providing reliable, affordable, and comfortable
-                transportation solutions across Delhi NCR and beyond.
-              </p>
-              <p className="text-orange-600">
-                Our fleet includes a wide range of vehicles from popular Indian brands like Maruti, Hyundai, Tata, Mahindra, Toyota,
-                Honda and more. Whether you need a compact hatchback for city driving, a spacious SUV for family trips, or a
-                comfortable MUV for group travel, we have the perfect car for you.
-              </p>
-              <p>
-                We pride ourselves on our transparent pricing, well-maintained vehicles, and exceptional customer service.
-                Your journey is our priority!
-              </p>
-            </div>
-          </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-12">
-          {stats.map((s) => (
-            <div key={s.label} className={`bg-gradient-to-r ${s.color} text-white rounded-xl p-5 text-center shadow-lg`}>
-              <div className="text-3xl md:text-4xl font-extrabold">{s.value}</div>
-              <div className="text-sm md:text-base opacity-90 mt-1">{s.label}</div>
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+          {stats.map((s, i) => (
+            <div key={i} className="bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/50 border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
+              <h4 className={`text-5xl font-black mb-2 ${s.color}`}>{s.value}</h4>
+              <p className="text-xl font-bold text-slate-900 mb-1">{s.label}</p>
+              <p className="text-slate-500 text-sm">{s.desc}</p>
             </div>
           ))}
         </div>
 
         {/* Why Choose Us */}
-        <div className="text-center mb-8">
-          <h3 className="text-2xl font-bold text-gray-900">Why Choose DesiRent?</h3>
-          <p className="text-gray-500 mt-2">Everything you need for a perfect road trip</p>
+        <div className="text-center mb-16">
+          <h3 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">Why Choose DesiRent?</h3>
+          <p className="text-slate-600 text-lg">Everything you need for a perfect and hassle-free road trip.</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {whyUs.map((item) => (
-            <div key={item.title} className="flex gap-4 p-5 bg-orange-50 rounded-xl hover:shadow-md transition group">
-              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
-                <item.icon className="w-5 h-5 text-white" />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {whyUs.map((item, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all group cursor-default">
+              <div className="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-orange-500 transition-colors duration-300">
+                <item.icon className="w-7 h-7 text-orange-600 group-hover:text-white transition-colors" />
               </div>
-              <div>
-                <h4 className="font-bold text-gray-800 text-sm">{item.title}</h4>
-                <p className="text-gray-500 text-xs mt-1 leading-relaxed">{item.desc}</p>
-              </div>
+              <h4 className="font-bold text-slate-900 text-lg mb-2">{item.title}</h4>
+              <p className="text-slate-600 text-sm leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

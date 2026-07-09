@@ -47,7 +47,7 @@ export default function Navbar({ activeSection, onNavClick, onAdminClick, onOpen
       {showUserDashboard && <UserDashboard onClose={() => setShowUserDashboard(false)} />}
 
       <nav className={`sticky top-0 z-50 transition-all duration-500
-        ${scrolled ? 'glass shadow-xl border-b border-white/20' : 'bg-white border-b border-gray-100'}`}>
+        ${scrolled ? 'bg-white/80 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.05)] border-b border-slate-200/50' : 'bg-white border-b border-slate-100'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
 
