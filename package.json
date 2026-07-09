@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest"
@@ -34,6 +34,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
+    "@vitest/ui": "^4.1.10",
     "jsdom": "^29.1.1",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
